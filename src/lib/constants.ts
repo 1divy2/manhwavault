@@ -1,5 +1,5 @@
 export const STATUS_OPTIONS = [
-  { value: "reading", label: "Reading" },
+  { value: "reading", label: "Ongoing" },
   { value: "completed", label: "Completed" },
   { value: "hiatus", label: "Hiatus" },
   { value: "dropped", label: "Dropped" },

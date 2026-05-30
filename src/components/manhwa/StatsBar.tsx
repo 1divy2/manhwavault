@@ -9,7 +9,7 @@ export function StatsBar({ entries }: Props) {
   const stats = [
     { label: "Total", value: entries.length, icon: Library },
     {
-      label: "Reading",
+      label: "Ongoing",
       value: entries.filter((e) => e.status === "reading").length,
       icon: BookOpen,
     },
