@@ -51,6 +51,7 @@ import { ManhwaList } from "@/components/manhwa/ManhwaList";
 import { EntryModal } from "@/components/manhwa/EntryModal";
 import { DetailModal } from "@/components/manhwa/DetailModal";
 import { toast } from "sonner";
+import { useTheme } from "@/components/theme-provider";
 
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
@@ -65,36 +66,12 @@ function LibraryPage() {
   const { user, signOut } = useAuth();
   const { data: entries = [], isLoading, create, update, remove } = useManhwa();
 
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== "undefined") {
-      return document.documentElement.classList.contains("dark");
-    }
-    return false;
-  });
+  const { theme, setTheme } = useTheme();
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "dark" || (!savedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-      document.documentElement.classList.add("dark");
-      setIsDark(true);
-    } else {
-      document.documentElement.classList.remove("dark");
-      setIsDark(false);
-    }
-  }, []);
+  const isDark = theme === "dark" || (theme === "system" && typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches);
 
   const toggleTheme = () => {
-    setIsDark((prev) => {
-      const next = !prev;
-      if (next) {
-        document.documentElement.classList.add("dark");
-        localStorage.setItem("theme", "dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-        localStorage.setItem("theme", "light");
-      }
-      return next;
-    });
+    setTheme(isDark ? "light" : "dark");
   };
 
   const [search, setSearch] = useState("");

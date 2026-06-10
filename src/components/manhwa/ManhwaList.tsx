@@ -175,10 +175,8 @@ function EditableRow({
       return (
         <a
           href={match[0]}
-          onClick={(e) => {
-            e.preventDefault();
-            window.open(match[0], "_blank");
-          }}
+          target="_blank"
+          rel="noopener noreferrer"
           className="text-blue-500 hover:text-blue-400 flex items-center gap-1 bg-background/80 px-2 py-1 rounded shadow-sm border"
           title="Open Link"
         >
