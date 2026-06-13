@@ -97,8 +97,6 @@ function LoginPage() {
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : "Continue"}
             </Button>
           </form>
-
-          </form>
         </div>
       </div>
     </div>
