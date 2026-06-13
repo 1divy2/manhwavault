@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { onAuthStateChanged, signOut as firebaseSignOut, type User } from "firebase/auth";
-import { auth } from "./firebase";
+import { type User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface AuthCtx {
@@ -20,12 +20,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -35,7 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         signOut: async () => {
           try {
-            await firebaseSignOut(auth);
+            await supabase.auth.signOut();
             toast.success("Signed out successfully");
           } catch (error) {
             toast.error("Error signing out");

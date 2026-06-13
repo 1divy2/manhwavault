@@ -19,7 +19,7 @@ export function useManhwa() {
       const { data, error } = await supabase
         .from("manhwa_entries")
         .select("*")
-        .eq("user_id", user.uid)
+        .eq("user_id", user.id)
         .order("updated_at", { ascending: false });
       if (error) throw error;
       return (data ?? []) as ManhwaEntry[];
@@ -33,7 +33,7 @@ export function useManhwa() {
       .channel("manhwa_entries_rt")
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "manhwa_entries", filter: `user_id=eq.${user.uid}` },
+        { event: "*", schema: "public", table: "manhwa_entries", filter: `user_id=eq.${user.id}` },
         () => qc.invalidateQueries({ queryKey: QK }),
       )
       .subscribe();
@@ -47,7 +47,7 @@ export function useManhwa() {
       if (!user) throw new Error("Not authenticated");
       const { error } = await supabase
         .from("manhwa_entries")
-        .insert({ ...input, user_id: user.uid });
+        .insert({ ...input, user_id: user.id });
       if (error) throw error;
     },
     onSuccess: () => {

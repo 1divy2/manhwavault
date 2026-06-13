@@ -1,8 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BookMarked, Loader2 } from "lucide-react";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,19 +30,23 @@ function LoginPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast.success("Signed in successfully!");
-    } catch (err: any) {
-      if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        try {
-          await createUserWithEmailAndPassword(auth, email, password);
-          toast.success("Account created and signed in!");
-        } catch (signupErr: any) {
-          toast.error(signupErr.message || "Failed to sign up.");
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (error && (error.message.includes("Invalid login credentials") || error.status === 400)) {
+        // Try sign up if sign in fails
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
+        if (signUpError) {
+          toast.error(signUpError.message || "Failed to sign up.");
+        } else {
+          toast.success("Account created! Please check your email if confirmation is required, otherwise you're signed in.");
         }
+      } else if (error) {
+        toast.error(error.message || "Failed to sign in.");
       } else {
-        toast.error(err.message || "Failed to sign in.");
+        toast.success("Signed in successfully!");
       }
+    } catch (err: any) {
+      toast.error(err.message || "Failed to sign in.");
     } finally {
       setBusy(false);
     }
@@ -52,9 +55,8 @@ function LoginPage() {
   const handleGoogle = async () => {
     setBusy(true);
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      toast.success("Signed in with Google!");
+      const { error } = await supabase.auth.signInWithOAuth({ provider: "google" });
+      if (error) throw error;
     } catch (err: any) {
       toast.error(err.message || "Google sign-in failed.");
     } finally {
